@@ -17,10 +17,14 @@ package com.example.android.sunshine.app;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -51,12 +55,14 @@ import com.example.android.sunshine.app.data.WeatherContract;
 import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
+import java.io.ByteArrayOutputStream;
 import java.util.Date;
 
 /**
@@ -72,6 +78,9 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     private boolean mHoldForTransition;
     private long mInitialSelectedDate = -1;
     GoogleApiClient googleClient;
+    double high;
+    double low;
+    int weatherId;
 
     private static final String SELECTED_KEY = "selected_position";
 
@@ -107,6 +116,19 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     static final int COL_WEATHER_CONDITION_ID = 6;
     static final int COL_COORD_LAT = 7;
     static final int COL_COORD_LONG = 8;
+
+    private static final String[] NOTIFY_WEATHER_PROJECTION = new String[] {
+            WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
+            WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
+            WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
+            WeatherContract.WeatherEntry.COLUMN_SHORT_DESC
+    };
+
+    // these indices must match the projection
+    private static final int INDEX_WEATHER_ID = 0;
+    private static final int INDEX_MAX_TEMP = 1;
+    private static final int INDEX_MIN_TEMP = 2;
+    private static final int INDEX_SHORT_DESC = 3;
 
     /**
      * A callback interface that all activities containing this fragment must
@@ -279,17 +301,40 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public void onConnected(Bundle connectionHint) {
 
+        Context context = getContext();
+        String locationQuery = Utility.getPreferredLocation(getActivity());
+        Uri weatherUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(locationQuery, System.currentTimeMillis());
+
+        Cursor cursor = context.getContentResolver().query(weatherUri, NOTIFY_WEATHER_PROJECTION, null, null, null);
+
+        if (cursor.moveToFirst()) {
+            weatherId = cursor.getInt(INDEX_WEATHER_ID);
+            high = cursor.getDouble(INDEX_MAX_TEMP);
+            low = cursor.getDouble(INDEX_MIN_TEMP);
+        }
+        int iconId = Utility.getIconResourceForWeatherCondition(weatherId);
+        Resources resources = context.getResources();
+        int artResourceId = Utility.getArtResourceForWeatherCondition(weatherId);
+        String artUrl = Utility.getArtUrlForWeatherCondition(context, weatherId);
+
         String WEARABLE_DATA_PATH = "/wearable_data";
 
         // Create a DataMap object and send it to the data layer
         DataMap dataMap = new DataMap();
         dataMap.putLong("time", new Date().getTime());
-        dataMap.putString("hole", "1");
-        dataMap.putString("front", "250");
-        dataMap.putString("middle", "260");
-        dataMap.putString("back", "270");
+        dataMap.putDouble("high", high);
+        dataMap.putDouble("low", low);
+        dataMap.putInt("id",weatherId);
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.art_clear);
+        Asset asset = createAssetFromBitmap(bitmap);
+        dataMap.putAsset("weatherImage", asset);
         //Requires a new thread to avoid blocking the UI
         new SendToDataLayerThread(WEARABLE_DATA_PATH, dataMap).start();
+    }
+    private static Asset createAssetFromBitmap(Bitmap bitmap) {
+        final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
+        return Asset.createFromBytes(byteStream.toByteArray());
     }
 
     // Disconnect from the data layer when the Activity stops
@@ -517,4 +562,5 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             updateEmptyView();
         }
     }
+
 }

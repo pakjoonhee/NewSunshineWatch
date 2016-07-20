@@ -1,9 +1,11 @@
 package com.example.android.sunshine.app;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.DataMap;

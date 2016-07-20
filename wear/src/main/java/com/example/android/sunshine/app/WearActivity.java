@@ -11,6 +11,8 @@ import android.support.wearable.activity.WearableActivity;
 import android.support.wearable.view.WatchViewStub;
 import android.widget.TextView;
 
+import com.google.android.gms.wearable.Asset;
+
 public class WearActivity extends WearableActivity {
 
     private TextView mTextView;
@@ -41,11 +43,13 @@ public class WearActivity extends WearableActivity {
             Bundle data = intent.getBundleExtra("datamap");
             // Display received data in UI
             String display = "Received from the data Layer\n" +
-                    "Hole: " + data.getString("hole") + "\n" +
-                    "Front: " + data.getString("front") + "\n" +
-                    "Middle: "+ data.getString("middle") + "\n" +
-                    "Back: " + data.getString("back");
+                    "High: " + data.getDouble("high") + "\n" +
+                    "Low: " + data.getDouble("low") + "\n";
+
             mTextView.setText(display);
+
+
+
         }
     }
 
