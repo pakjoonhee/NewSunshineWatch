@@ -82,6 +82,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     double low;
     int weatherId;
 
+
     private static final String SELECTED_KEY = "selected_position";
 
     private static final int FORECAST_LOADER = 0;
@@ -312,10 +313,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             high = cursor.getDouble(INDEX_MAX_TEMP);
             low = cursor.getDouble(INDEX_MIN_TEMP);
         }
-        int iconId = Utility.getIconResourceForWeatherCondition(weatherId);
-        Resources resources = context.getResources();
-        int artResourceId = Utility.getArtResourceForWeatherCondition(weatherId);
-        String artUrl = Utility.getArtUrlForWeatherCondition(context, weatherId);
 
         String WEARABLE_DATA_PATH = "/wearable_data";
 
@@ -325,9 +322,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         dataMap.putDouble("high", high);
         dataMap.putDouble("low", low);
         dataMap.putInt("id",weatherId);
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.art_clear);
-        Asset asset = createAssetFromBitmap(bitmap);
-        dataMap.putAsset("weatherImage", asset);
         //Requires a new thread to avoid blocking the UI
         new SendToDataLayerThread(WEARABLE_DATA_PATH, dataMap).start();
     }
