@@ -34,7 +34,6 @@ public class WearActivity extends WearableActivity {
 
         setAmbientEnabled();
 
-        // Register the local broadcast receiver
         IntentFilter messageFilter = new IntentFilter(Intent.ACTION_SEND);
         MessageReceiver messageReceiver = new MessageReceiver();
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, messageFilter);
@@ -45,8 +44,11 @@ public class WearActivity extends WearableActivity {
         public void onReceive(Context context, Intent intent) {
             Bundle data = intent.getBundleExtra("datamap");
             // Display received data in UI
-            String display = "Today's High: " + data.getDouble("high") + "\n" +
-                    "Today's Low: " + data.getDouble("low") + "\n" + "\n";
+            String display = "Today's High: "
+                    + data.getDouble("high") + "\n" +
+                    "Today's Low: "
+                    + data.getDouble("low")
+                    + "\n" + "\n";
 
             mTextView.setText(display);
 

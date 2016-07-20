@@ -313,25 +313,20 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             high = cursor.getDouble(INDEX_MAX_TEMP);
             low = cursor.getDouble(INDEX_MIN_TEMP);
         }
+        long highRound = Math.round(high);
+        long lowRound = Math.round(low);
+
 
         String WEARABLE_DATA_PATH = "/wearable_data";
 
-        // Create a DataMap object and send it to the data layer
         DataMap dataMap = new DataMap();
         dataMap.putLong("time", new Date().getTime());
-        dataMap.putDouble("high", high);
-        dataMap.putDouble("low", low);
+        dataMap.putDouble("high", highRound);
+        dataMap.putDouble("low", lowRound);
         dataMap.putInt("id",weatherId);
-        //Requires a new thread to avoid blocking the UI
         new SendToDataLayerThread(WEARABLE_DATA_PATH, dataMap).start();
     }
-    private static Asset createAssetFromBitmap(Bitmap bitmap) {
-        final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
-        return Asset.createFromBytes(byteStream.toByteArray());
-    }
 
-    // Disconnect from the data layer when the Activity stops
     @Override
     public void onStop() {
         if (null != googleClient && googleClient.isConnected()) {
@@ -340,7 +335,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         super.onStop();
     }
 
-    // Placeholders for required connection callbacks
     @Override
     public void onConnectionSuspended(int cause) { }
 
@@ -350,15 +344,12 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     class SendToDataLayerThread extends Thread {
         String path;
         DataMap dataMap;
-
-        // Constructor for sending data objects to the data layer
         SendToDataLayerThread(String p, DataMap data) {
             path = p;
             dataMap = data;
         }
 
         public void run() {
-            // Construct a DataRequest and send over the data layer
             PutDataMapRequest putDMR = PutDataMapRequest.create(path);
             putDMR.getDataMap().putAll(dataMap);
             PutDataRequest request = putDMR.asPutDataRequest();
@@ -366,7 +357,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             if (result.getStatus().isSuccess()) {
                 Log.v("myTag", "DataMap: " + dataMap + " sent successfully to data layer ");
             } else {
-                // Log an error
                 Log.v("myTag", "ERROR: failed to send DataMap to data layer");
             }
         }
