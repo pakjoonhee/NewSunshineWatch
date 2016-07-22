@@ -5,7 +5,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
+import android.hardware.display.DisplayManager;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.wearable.activity.WearableActivity;
@@ -16,7 +18,7 @@ import android.widget.TextView;
 
 import com.google.android.gms.wearable.Asset;
 
-public class WearActivity extends WearableActivity {
+public class WearActivity extends WearableActivity{
 
     private TextView mTextView;
 
@@ -39,6 +41,7 @@ public class WearActivity extends WearableActivity {
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, messageFilter);
     }
 
+
     public class MessageReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -57,6 +60,7 @@ public class WearActivity extends WearableActivity {
             Drawable res = getDrawable(iconId);
             ImageView weatherImage = (ImageView)findViewById(R.id.weatherImage);
             weatherImage.setImageDrawable(res);
+
 
 
         }

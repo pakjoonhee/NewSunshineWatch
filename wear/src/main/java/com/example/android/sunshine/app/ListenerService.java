@@ -1,6 +1,7 @@
 package com.example.android.sunshine.app;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -26,6 +27,17 @@ public class ListenerService extends WearableListenerService{
                 String path = event.getDataItem().getUri().getPath();
                 if (path.equals(WEARABLE_DATA_PATH)) {}
                 dataMap = DataMapItem.fromDataItem(event.getDataItem()).getDataMap();
+
+                SharedPreferences settings = getSharedPreferences("favoritesArray", MODE_PRIVATE);
+                SharedPreferences.Editor editor = settings.edit();
+                String highTemp = String.valueOf(dataMap.getDouble("high"));
+                String lowtemp = String.valueOf(dataMap.getDouble("low"));
+                String weatherSym = Integer.toString(dataMap.getInt("id"));
+                String weatherInfo = highTemp.concat("|" + lowtemp.concat("|" + weatherSym));
+
+                //String longString = settings.getString("longString", "").concat("|" + title.concat("|" + image));
+                editor.putString("weatherInfo", weatherInfo);
+                editor.apply();
 
                 Intent messageIntent = new Intent();
                 messageIntent.setAction(Intent.ACTION_SEND);
