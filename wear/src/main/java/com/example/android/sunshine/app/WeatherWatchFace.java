@@ -22,11 +22,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -54,6 +57,8 @@ import java.util.Arrays;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+
+import static com.example.android.sunshine.app.Utility.getIconResourceForWeatherCondition;
 
 /**
  * Digital watch face with seconds. In ambient mode, the seconds aren't displayed. On devices with
@@ -285,8 +290,18 @@ public class WeatherWatchFace extends CanvasWatchFaceService{
                     ArrayList<String> list = new ArrayList<String>(Arrays.asList(split));
                     String weatherHigh = "High:" + "" + list.get(0);
                     String weatherLow = "Low:" + "" + list.get(1);
-                    canvas.drawText(weatherHigh, mXOffset, 180, mTextPaint);
-                    canvas.drawText(weatherLow, mXOffset, 220, mTextPaint);
+                    String icon = list.get(2);
+                    int result = Integer.parseInt(icon);
+                    int iconId = getIconResourceForWeatherCondition(result);
+
+                    canvas.drawText(weatherHigh, 15, 239, mTextPaint);
+                    canvas.drawText(weatherLow, 34, 190, mTextPaint);
+                    Drawable res = getDrawable(iconId);
+                    Bitmap theImage = ((BitmapDrawable)res).getBitmap();
+                    canvas.drawBitmap(theImage, 120, 20, mTextPaint);
+
+                    //res.setBounds(left, top, right, bottom);
+                    //res.draw(canvas);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -322,26 +337,7 @@ public class WeatherWatchFace extends CanvasWatchFaceService{
             }
         }
 
-        private void setTextSizeForWidth(Paint paint, float desiredWidth,
-                                                String text) {
 
-            // Pick a reasonably large value for the test. Larger values produce
-            // more accurate results, but may cause problems with hardware
-            // acceleration. But there are workarounds for that, too; refer to
-            // http://stackoverflow.com/questions/6253528/font-size-too-large-to-fit-in-cache
-            final float testTextSize = 48f;
-
-            // Get the bounds of the text, using our testTextSize.
-            paint.setTextSize(testTextSize);
-            Rect bounds = new Rect();
-            paint.getTextBounds(text, 0, text.length(), bounds);
-
-            // Calculate the desired size as a proportion of our testTextSize.
-            float desiredTextSize = testTextSize * desiredWidth / bounds.width();
-
-            // Set the paint for that size.
-            paint.setTextSize(desiredTextSize);
-        }
 
         /**
          * Starts the {@link #mUpdateTimeHandler} timer if it should be running and isn't currently
