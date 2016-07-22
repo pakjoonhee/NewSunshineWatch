@@ -283,8 +283,10 @@ public class WeatherWatchFace extends CanvasWatchFaceService{
                     weatherInfo = new AsyncHttpTask().execute().get();
                     String[] split = weatherInfo.split("\\|");
                     ArrayList<String> list = new ArrayList<String>(Arrays.asList(split));
-                    String weatherHigh = list.get(0);
+                    String weatherHigh = "High:" + "" + list.get(0);
+                    String weatherLow = "Low:" + "" + list.get(1);
                     canvas.drawText(weatherHigh, mXOffset, 180, mTextPaint);
+                    canvas.drawText(weatherLow, mXOffset, 220, mTextPaint);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
