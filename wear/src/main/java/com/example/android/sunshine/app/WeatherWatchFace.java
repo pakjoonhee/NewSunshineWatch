@@ -27,6 +27,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -36,6 +37,7 @@ import android.text.format.Time;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
+import android.widget.Toast;
 
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataEvent;
@@ -43,17 +45,21 @@ import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.DataMapItem;
 
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.TimeZone;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Digital watch face with seconds. In ambient mode, the seconds aren't displayed. On devices with
  * low-bit ambient mode, the text is drawn without anti-aliasing in ambient mode.
  */
-public class WeatherWatchFace extends CanvasWatchFaceService implements DataApi.DataListener{
+public class WeatherWatchFace extends CanvasWatchFaceService{
     private static final Typeface NORMAL_TYPEFACE =
             Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
 
@@ -74,21 +80,6 @@ public class WeatherWatchFace extends CanvasWatchFaceService implements DataApi.
     @Override
     public Engine onCreateEngine() {
         return new Engine();
-    }
-
-    @Override
-    public void onDataChanged(DataEventBuffer dataEvents) {
-
-        DataMap dataMap;
-        for (DataEvent event : dataEvents) {
-            Log.v("myTag", "DataMap received on watch: " + DataMapItem.fromDataItem(event.getDataItem()).getDataMap());
-            if (event.getType() == DataEvent.TYPE_CHANGED) {
-                String path = event.getDataItem().getUri().getPath();
-                if (path.equals(WEARABLE_DATA_PATH)) {}
-                dataMap = DataMapItem.fromDataItem(event.getDataItem()).getDataMap();
-
-            }
-        }
     }
 
     private static class EngineHandler extends Handler {
@@ -156,9 +147,6 @@ public class WeatherWatchFace extends CanvasWatchFaceService implements DataApi.
             mTextPaint = createTextPaint(resources.getColor(R.color.digital_text));
 
             mTime = new Time();
-
-            SharedPreferences settings = getSharedPreferences("favoritesArray", MODE_PRIVATE);
-            weatherInfo = settings.getString("weatherInfo", null);
 
         }
 
@@ -288,17 +276,22 @@ public class WeatherWatchFace extends CanvasWatchFaceService implements DataApi.
             } else {
                 canvas.drawRect(0, 0, bounds.width(), bounds.height(), mBackgroundPaint);
             }
-            SharedPreferences settings = getSharedPreferences("favoritesArray", MODE_PRIVATE);
-            weatherInfo = settings.getString("weatherInfo", null);
-            String[] split = weatherInfo.split("\\|");
-            ArrayList<String> list = new ArrayList<String>(Arrays.asList(split));
-            String weatherHigh = list.get(0);
-            //if (settings.getString("longString", null) == null) {
-            //    Toast.makeText(getApplicationContext(), error, Toast.LENGTH_LONG).show();
-            //} else {
-            //weatherInfo = settings.getString("weatherInfo", null);
-            //canvas.drawText(weatherInfo, mXOffset, 180, mTextPaint);
-            //}
+            try {
+                if (new AsyncHttpTask().execute().get() == null) {
+                    Toast.makeText(getApplicationContext(), error, Toast.LENGTH_LONG).show();
+                } else {
+                    weatherInfo = new AsyncHttpTask().execute().get();
+                    String[] split = weatherInfo.split("\\|");
+                    ArrayList<String> list = new ArrayList<String>(Arrays.asList(split));
+                    String weatherHigh = list.get(0);
+                    canvas.drawText(weatherHigh, mXOffset, 180, mTextPaint);
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+
 
             // Draw H:MM in ambient mode or H:MM:SS in interactive mode.
             mTime.setToNow();
@@ -306,9 +299,25 @@ public class WeatherWatchFace extends CanvasWatchFaceService implements DataApi.
                     ? String.format("%d:%02d", mTime.hour, mTime.minute)
                     : String.format("%d:%02d:%02d", mTime.hour, mTime.minute, mTime.second);
             canvas.drawText(text, mXOffset, mYOffset, mTextPaint);
-            canvas.drawText(weatherHigh, mXOffset, 180, mTextPaint);
 
 
+        }
+
+        public class AsyncHttpTask extends AsyncTask<Void, Void, String> {
+
+            @Override
+            protected String doInBackground(Void...voids) {
+
+                SharedPreferences settings = getSharedPreferences("favoritesArray", MODE_PRIVATE);
+                String result = settings.getString("weatherInfo", null);
+
+                return result;
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                super.onPostExecute(result);
+            }
         }
 
         private void setTextSizeForWidth(Paint paint, float desiredWidth,
