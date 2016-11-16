@@ -301,6 +301,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
     @Override
     public void onConnected(Bundle connectionHint) {
+        //fix the connection hint and then add an XML for the watch tomorrow
 
         Context context = getContext();
         String locationQuery = Utility.getPreferredLocation(getActivity());
