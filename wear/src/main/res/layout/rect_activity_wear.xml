@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     tools:context="com.example.android.sunshine.app.WearActivity" tools:deviceIds="wear_round"
     android:orientation="vertical"
-    android:background="#0288D1">
+    android:background="@color/black">
 
     <TextClock
         android:layout_width="fill_parent"

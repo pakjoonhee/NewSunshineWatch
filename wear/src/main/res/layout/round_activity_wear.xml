@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     tools:context="com.example.android.sunshine.app.WearActivity" tools:deviceIds="wear_round"
     android:orientation="vertical"
-    android:background="#0288D1">
+    android:background="@color/black">
 
     <TextClock
         android:layout_width="fill_parent"
@@ -13,7 +13,8 @@
         android:textSize="20sp"
         android:layout_marginTop="30dp"/>
 
-    <TextView android:id="@+id/text" android:layout_width="wrap_content"
+    <TextView android:id="@+id/text"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="@string/hello_round" />

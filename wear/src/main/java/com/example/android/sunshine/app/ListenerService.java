@@ -35,7 +35,6 @@ public class ListenerService extends WearableListenerService{
                 String weatherSym = Integer.toString(dataMap.getInt("id"));
                 String weatherInfo = highTemp.concat("|" + lowtemp.concat("|" + weatherSym));
 
-                //String longString = settings.getString("longString", "").concat("|" + title.concat("|" + image));
                 editor.putString("weatherInfo", weatherInfo);
                 editor.apply();
 
