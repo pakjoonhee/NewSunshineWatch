@@ -294,8 +294,8 @@ public class WeatherWatchFace extends CanvasWatchFaceService{
                     int result = Integer.parseInt(icon);
                     int iconId = getIconResourceForWeatherCondition(result);
 
-                    canvas.drawText(weatherHigh, 15, 239, mTextPaint);
-                    canvas.drawText(weatherLow, 34, 190, mTextPaint);
+                    canvas.drawText(weatherHigh, 27, 239, mTextPaint);
+                    canvas.drawText(weatherLow, 27, 190, mTextPaint);
                     Drawable res = getDrawable(iconId);
                     Bitmap theImage = ((BitmapDrawable)res).getBitmap();
                     canvas.drawBitmap(theImage, 120, 20, mTextPaint);
